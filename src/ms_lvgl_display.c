@@ -37,7 +37,6 @@
 static void disp_init(void);
 
 static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p);
-static void disp_2d_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p);
 #if LV_USE_GPU
 static void gpu_blend(struct _disp_drv_t * disp_drv, lv_color_t * dest, const lv_color_t * src, uint32_t length, lv_opa_t opa);
 static void gpu_fill(struct _disp_drv_t * disp_drv, lv_color_t * dest_buf, lv_coord_t dest_width, const lv_area_t * fill_area, lv_color_t color);
@@ -107,11 +106,7 @@ void lv_port_disp_init(void)
     disp_drv.ver_res = var_info.yres;
 
     /*Used to copy the buffer's content to the display*/
-    if (fix_info.capability & MS_FB_CAP_2D_FLUSH) {
-        disp_drv.flush_cb = disp_2d_flush;
-    } else {
-        disp_drv.flush_cb = disp_flush;
-    }
+    disp_drv.flush_cb = disp_flush;
 
     /*Set a display buffer*/
     disp_drv.buffer = &disp_buf_2;
@@ -176,20 +171,6 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
     /* IMPORTANT!!!
      * Inform the graphics library that you are ready with the flushing*/
     lv_disp_flush_ready(disp_drv);
-}
-
-/* Flush the content of the internal buffer the specific area on the display
- * You can use DMA or any hardware acceleration to do this operation in the background but
- * 'lv_disp_flush_ready()' has to be called when finished. */
-static void disp_2d_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
-{
-    if ((area->y2 - area->y1) >= 10) {
-        /* IMPORTANT!!!
-         * Inform the graphics library that you are ready with the flushing*/
-        lv_disp_flush_ready(disp_drv);
-    } else {
-        disp_flush(disp_drv, area, color_p);
-    }
 }
 
 /*OPTIONAL: GPU INTERFACE*/
