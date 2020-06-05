@@ -103,8 +103,8 @@ src/demo/lv_examples/lv_tutorial/9_responsive/lv_tutorial_responsive.c
 # Header file search path (eg. LOCAL_INC_PATH := -I"Your header files search path")
 #*********************************************************************************************************
 LOCAL_INC_PATH := \
--I"./src/lvgl" \
--I"./src" \
+-I"$(MSRTOS_BASE_PATH)/littlevgl/src/lvgl" \
+-I"$(MSRTOS_BASE_PATH)/littlevgl/src" \
 -I"./src/demo/lv_examples"
 
 #*********************************************************************************************************
@@ -117,7 +117,7 @@ LOCAL_DSYMBOL :=  \
 # Depend library (eg. LOCAL_DEPEND_LIB := -la LOCAL_DEPEND_LIB_PATH := -L"Your library search path")
 #*********************************************************************************************************
 LOCAL_DEPEND_LIB      := -llittlevgl
-LOCAL_DEPEND_LIB_PATH := -L"$(OUTDIR)"
+LOCAL_DEPEND_LIB_PATH := -L"$(MSRTOS_BASE_PATH)/littlevgl/$(OUTDIR)"
 
 #*********************************************************************************************************
 # C++ config
