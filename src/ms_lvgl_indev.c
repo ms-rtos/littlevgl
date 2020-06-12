@@ -98,6 +98,8 @@ static void touchpad_init(void)
         ms_printf("Failed to open /dev/touch0 device!\n");
         abort();
     }
+
+    ms_io_fcntl(touch_fd, F_SETFL, FNONBLOCK);
 }
 
 /* Will be called by the library to read the touchpad */
