@@ -46,9 +46,9 @@ static void gpu_fill(struct _disp_drv_t * disp_drv, lv_color_t * dest_buf, lv_co
  *  STATIC VARIABLES
  **********************/
 
-static int fb_fd;
-static ms_fb_var_screeninfo_t var_info;
-static ms_fb_fix_screeninfo_t fix_info;
+static int                    ms_lvgl_fb_fd;
+static ms_fb_var_screeninfo_t ms_lvgl_fb_var_info;
+static ms_fb_fix_screeninfo_t ms_lvgl_fb_fix_info;
 
 /**********************
  *      MACROS
@@ -102,8 +102,8 @@ void lv_port_disp_init(void)
     /*Set up the functions to access to your display*/
 
     /*Set the resolution of the display*/
-    disp_drv.hor_res = var_info.xres;
-    disp_drv.ver_res = var_info.yres;
+    disp_drv.hor_res = ms_lvgl_fb_var_info.xres;
+    disp_drv.ver_res = ms_lvgl_fb_var_info.yres;
 
     /*Used to copy the buffer's content to the display*/
     disp_drv.flush_cb = disp_flush;
@@ -132,18 +132,18 @@ void lv_port_disp_init(void)
 /* Initialize your display and the required peripherals. */
 static void disp_init(void)
 {
-    fb_fd = ms_io_open("/dev/fb0", O_RDWR, 0666);
-    if (fb_fd < 0) {
+    ms_lvgl_fb_fd = ms_io_open("/dev/fb0", O_RDWR, 0666);
+    if (ms_lvgl_fb_fd < 0) {
         ms_printf("Failed to open /dev/fb0 device!\n");
         abort();
     }
 
-    if (ms_io_ioctl(fb_fd, MS_FB_CMD_GET_VSCREENINFO, &var_info) < 0) {
+    if (ms_io_ioctl(ms_lvgl_fb_fd, MS_FB_CMD_GET_VSCREENINFO, &ms_lvgl_fb_var_info) < 0) {
         ms_printf("Failed to get /dev/fb0 variable screen info!\n");
         abort();
     }
 
-    if (ms_io_ioctl(fb_fd, MS_FB_CMD_GET_FSCREENINFO, &fix_info) < 0) {
+    if (ms_io_ioctl(ms_lvgl_fb_fd, MS_FB_CMD_GET_FSCREENINFO, &ms_lvgl_fb_fix_info) < 0) {
         ms_printf("Failed to get /dev/fb0 fix screen info!\n");
         abort();
     }
@@ -158,13 +158,13 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
     lv_color_t *ptr;
     int32_t len = (area->x2 - area->x1 + 1) * sizeof(lv_color_t);
 
-    ptr = (lv_color_t *)(fix_info.smem_start + \
-                         area->y1 * fix_info.line_length + \
+    ptr = (lv_color_t *)(ms_lvgl_fb_fix_info.smem_start + \
+                         area->y1 * ms_lvgl_fb_fix_info.line_length + \
                          area->x1 * sizeof(lv_color_t));
 
     for(y = area->y1; y <= area->y2; y++) {
         memcpy(ptr, color_p, len);
-        ptr = (lv_color_t *)((char *)ptr + fix_info.line_length);
+        ptr = (lv_color_t *)((char *)ptr + ms_lvgl_fb_fix_info.line_length);
         color_p = (lv_color_t *)((char *)color_p + len);
     }
 

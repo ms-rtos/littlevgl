@@ -41,9 +41,8 @@ static bool touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data);
  *  STATIC VARIABLES
  **********************/
 
-static lv_indev_t * indev_touchpad;
-
-static int touch_fd;
+static lv_indev_t * ms_lvgl_touch_indev;
+static int          ms_lvgl_touch_fd;
 
 /**********************
  *      MACROS
@@ -79,7 +78,7 @@ void lv_port_indev_init(void)
     lv_indev_drv_init(&indev_drv);
     indev_drv.type = LV_INDEV_TYPE_POINTER;
     indev_drv.read_cb = touchpad_read;
-    indev_touchpad = lv_indev_drv_register(&indev_drv);
+    ms_lvgl_touch_indev = lv_indev_drv_register(&indev_drv);
 }
 
 /**********************
@@ -93,13 +92,13 @@ void lv_port_indev_init(void)
 /*Initialize your touchpad*/
 static void touchpad_init(void)
 {
-    touch_fd = ms_io_open("/dev/touch0", O_RDONLY, 0666);
-    if (touch_fd < 0) {
+    ms_lvgl_touch_fd = ms_io_open("/dev/touch0", O_RDONLY, 0666);
+    if (ms_lvgl_touch_fd < 0) {
         ms_printf("Failed to open /dev/touch0 device!\n");
         abort();
     }
 
-    ms_io_fcntl(touch_fd, F_SETFL, FNONBLOCK);
+    ms_io_fcntl(ms_lvgl_touch_fd, F_SETFL, FNONBLOCK);
 }
 
 /* Will be called by the library to read the touchpad */
@@ -110,7 +109,7 @@ static bool touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
     static int16_t last_y = 0;
     ms_touch_event_t event;
 
-    if (ms_io_read(touch_fd, &event, sizeof(event)) == sizeof(event)) {
+    if (ms_io_read(ms_lvgl_touch_fd, &event, sizeof(event)) == sizeof(event)) {
         if (event.touch_detected > 0) {
             data->point.x = event.touch_x[0];
             data->point.y = event.touch_y[0];
