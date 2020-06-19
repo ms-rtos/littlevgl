@@ -203,7 +203,7 @@ static lv_fs_res_t fs_open (lv_fs_drv_t * drv, void * file_p, const char * path,
 
     file->fd = ms_io_open(path, oflag, 0666);
     if (file->fd < 0) {
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else {
         res = LV_FS_RES_OK;
     }
@@ -224,7 +224,7 @@ static lv_fs_res_t fs_close (lv_fs_drv_t * drv, void * file_p)
     file_t *file = file_p;
 
     if (ms_io_close(file->fd) < 0) {
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else {
         res = LV_FS_RES_OK;
     }
@@ -251,7 +251,7 @@ static lv_fs_res_t fs_read (lv_fs_drv_t * drv, void * file_p, void * buf, uint32
     len = ms_io_read(file->fd, buf, btr);
     if (len < 0) {
         *br = 0;
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else {
         *br = len;
         res = LV_FS_RES_OK;
@@ -278,7 +278,7 @@ static lv_fs_res_t fs_write(lv_fs_drv_t * drv, void * file_p, const void * buf, 
     len = ms_io_write(file->fd, buf, btw);
     if (len < 0) {
         *bw = 0;
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else {
         *bw = len;
         res = LV_FS_RES_OK;
@@ -301,7 +301,7 @@ static lv_fs_res_t fs_seek (lv_fs_drv_t * drv, void * file_p, uint32_t pos)
     file_t *file = file_p;
 
     if (ms_io_lseek(file->fd, pos, SEEK_SET) < 0) {
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else {
         res = LV_FS_RES_OK;
     }
@@ -324,7 +324,7 @@ static lv_fs_res_t fs_size (lv_fs_drv_t * drv, void * file_p, uint32_t * size_p)
 
     if (ms_io_fstat(file->fd, &st) < 0) {
         *size_p = 0;
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else {
         *size_p = st.st_size;
         res = LV_FS_RES_OK;
@@ -332,6 +332,7 @@ static lv_fs_res_t fs_size (lv_fs_drv_t * drv, void * file_p, uint32_t * size_p)
 
     return res;
 }
+
 /**
  * Give the position of the read write pointer
  * @param drv pointer to a driver where this function belongs
@@ -349,7 +350,7 @@ static lv_fs_res_t fs_tell (lv_fs_drv_t * drv, void * file_p, uint32_t * pos_p)
     off = ms_io_tell(file->fd);
     if (off < 0) {
         *pos_p = 0;
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else {
         *pos_p = off;
         res = LV_FS_RES_OK;
@@ -364,12 +365,12 @@ static lv_fs_res_t fs_tell (lv_fs_drv_t * drv, void * file_p, uint32_t * pos_p)
  * @param path path of the file to delete
  * @return  LV_FS_RES_OK or any error from lv_fs_res_t enum
  */
-static lv_fs_res_t fs_remove (lv_fs_drv_t * drv, const char *path)
+static lv_fs_res_t fs_remove (lv_fs_drv_t * drv, const char * path)
 {
     lv_fs_res_t res;
 
     if (ms_io_unlink(path) < 0) {
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else {
         res = LV_FS_RES_OK;
     }
@@ -390,7 +391,7 @@ static lv_fs_res_t fs_trunc (lv_fs_drv_t * drv, void * file_p)
     file_t *file = file_p;
 
     if (ms_io_ftruncate(file->fd, ms_io_tell(file->fd)) < 0) {
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else {
         res = LV_FS_RES_OK;
     }
@@ -410,7 +411,7 @@ static lv_fs_res_t fs_rename (lv_fs_drv_t * drv, const char * oldname, const cha
     lv_fs_res_t res;
 
     if (ms_io_rename(oldname, newname) < 0) {
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else {
         res = LV_FS_RES_OK;
     }
@@ -432,7 +433,7 @@ static lv_fs_res_t fs_free_space (struct _lv_fs_drv_t * drv, uint32_t * total_p,
     ms_statvfs_t st;
 
     if (ms_io_statvfs(".", &st) < 0) {
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else {
         *total_p = st.f_bsize * st.f_blocks / 1024U;
         *free_p  = st.f_bsize * st.f_bfree / 1024U;
@@ -449,14 +450,14 @@ static lv_fs_res_t fs_free_space (struct _lv_fs_drv_t * drv, uint32_t * total_p,
  * @param path path to a directory
  * @return LV_FS_RES_OK or any error from lv_fs_res_t enum
  */
-static lv_fs_res_t fs_dir_open (lv_fs_drv_t * drv, void * rddir_p, const char *path)
+static lv_fs_res_t fs_dir_open (lv_fs_drv_t * drv, void * rddir_p, const char * path)
 {
     lv_fs_res_t res;
     dir_t *dir = rddir_p;
 
     dir->dir = ms_io_opendir(path);
     if (dir->dir == MS_NULL) {
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else {
         res = LV_FS_RES_OK;
     }
@@ -472,7 +473,7 @@ static lv_fs_res_t fs_dir_open (lv_fs_drv_t * drv, void * rddir_p, const char *p
  * @param fn pointer to a buffer to store the filename
  * @return LV_FS_RES_OK or any error from lv_fs_res_t enum
  */
-static lv_fs_res_t fs_dir_read (lv_fs_drv_t * drv, void * rddir_p, char *fn)
+static lv_fs_res_t fs_dir_read (lv_fs_drv_t * drv, void * rddir_p, char * fn)
 {
     lv_fs_res_t res;
     dir_t *dir = rddir_p;
@@ -482,7 +483,7 @@ static lv_fs_res_t fs_dir_read (lv_fs_drv_t * drv, void * rddir_p, char *fn)
 
     ret = ms_io_readdir_r(dir->dir, &dirent, &result);
     if (ret < 0) {
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else if (ret == 0) {
         res = LV_FS_RES_FS_ERR;
     } else {
@@ -505,7 +506,7 @@ static lv_fs_res_t fs_dir_close (lv_fs_drv_t * drv, void * rddir_p)
     dir_t *dir = rddir_p;
 
     if (ms_io_closedir(dir->dir) < 0) {
-        res = ms_errno_to_lv_fs_res(errno);
+        res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
     } else {
         res = LV_FS_RES_OK;
     }
