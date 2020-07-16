@@ -6,7 +6,7 @@
  *
  * File: ms_lvgl_indev.c LittleVGL input device porting.
  *
- * Author: Jiao.jinxing <jiaojixing@acoinfo.com>
+ * Author: Jiao.jinxing <jiaojinxing@acoinfo.com>
  *
  */
 

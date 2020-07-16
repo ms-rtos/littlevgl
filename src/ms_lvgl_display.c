@@ -6,7 +6,7 @@
  *
  * File: ms_lvgl_display.c LittleVGL display porting.
  *
- * Author: Jiao.jinxing <jiaojixing@acoinfo.com>
+ * Author: Jiao.jinxing <jiaojinxing@acoinfo.com>
  *
  */
 
