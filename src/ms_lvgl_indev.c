@@ -110,7 +110,7 @@ static bool touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
     ms_touch_event_t event;
 
     if (ms_io_read(ms_lvgl_touch_fd, &event, sizeof(event)) == sizeof(event)) {
-        if (event.touch_detected > 0) {
+        if ((event.touch_detected > 0) && (event.touch_event_id[0] == MS_TOUCH_EVENT_ID_PRESS_DOWN)) {
             data->point.x = event.touch_x[0];
             data->point.y = event.touch_y[0];
             last_x = data->point.x;
