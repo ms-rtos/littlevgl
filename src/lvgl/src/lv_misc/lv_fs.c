@@ -9,12 +9,13 @@
 #include "lv_fs.h"
 #if LV_USE_FILESYSTEM
 
+#include "../lv_misc/lv_debug.h"
 #include "lv_ll.h"
 #include <string.h>
 #include "lv_gc.h"
 
 #if defined(LV_GC_INCLUDE)
-#include LV_GC_INCLUDE
+    #include LV_GC_INCLUDE
 #endif /* LV_ENABLE_GC */
 
 /*********************
@@ -26,7 +27,7 @@
  * free function, otherwise compilation would fail.
  */
 #ifdef free
-#undef free
+    #undef free
 #endif
 
 /**********************
@@ -53,13 +54,13 @@ static const char * lv_fs_get_real_path(const char * path);
 /**
  * Initialize the File system interface
  */
-void lv_fs_init(void)
+void _lv_fs_init(void)
 {
-    lv_ll_init(&LV_GC_ROOT(_lv_drv_ll), sizeof(lv_fs_drv_t));
+    _lv_ll_init(&LV_GC_ROOT(_lv_drv_ll), sizeof(lv_fs_drv_t));
 }
 
 /**
- * Test if a drive is rady or not. If the `ready` function was not initialized `true` will be
+ * Test if a drive is ready or not. If the `ready` function was not initialized `true` will be
  * returned.
  * @param letter letter of the drive
  * @return true: drive is ready; false: drive is not ready
@@ -107,7 +108,7 @@ lv_fs_res_t lv_fs_open(lv_fs_file_t * file_p, const char * path, lv_fs_mode_t mo
     }
 
     file_p->file_d = lv_mem_alloc(file_p->drv->file_size);
-    lv_mem_assert(file_p->file_d);
+    LV_ASSERT_MEM(file_p->file_d);
     if(file_p->file_d == NULL) {
         file_p->drv = NULL;
         return LV_FS_RES_OUT_OF_MEM; /* Out of memory */
@@ -162,11 +163,10 @@ lv_fs_res_t lv_fs_close(lv_fs_file_t * file_p)
 lv_fs_res_t lv_fs_remove(const char * path)
 {
     if(path == NULL) return LV_FS_RES_INV_PARAM;
-    lv_fs_drv_t * drv = NULL;
 
     char letter = path[0];
 
-    drv = lv_fs_get_drv(letter);
+    lv_fs_drv_t * drv = lv_fs_get_drv(letter);
     if(drv == NULL) return LV_FS_RES_NOT_EX;
     if(drv->ready_cb != NULL) {
         if(drv->ready_cb(drv) == false) return LV_FS_RES_HW_ERR;
@@ -348,8 +348,8 @@ lv_fs_res_t lv_fs_rename(const char * oldname, const char * newname)
 }
 
 /**
- * Initialize a 'fs_read_dir_t' variable for directory reading
- * @param rddir_p pointer to a 'fs_read_dir_t' variable
+ * Initialize a 'lv_fs_dir_t' variable for directory reading
+ * @param rddir_p pointer to a 'lv_fs_dir_t' variable
  * @param path path to a directory
  * @return LV_FS_RES_OK or any error from lv_fs_res_t enum
  */
@@ -367,7 +367,7 @@ lv_fs_res_t lv_fs_dir_open(lv_fs_dir_t * rddir_p, const char * path)
     }
 
     rddir_p->dir_d = lv_mem_alloc(rddir_p->drv->rddir_size);
-    lv_mem_assert(rddir_p->dir_d);
+    LV_ASSERT_MEM(rddir_p->dir_d);
     if(rddir_p->dir_d == NULL) {
         rddir_p->dir_d = NULL;
         return LV_FS_RES_OUT_OF_MEM; /* Out of memory */
@@ -387,7 +387,7 @@ lv_fs_res_t lv_fs_dir_open(lv_fs_dir_t * rddir_p, const char * path)
 /**
  * Read the next filename form a directory.
  * The name of the directories will begin with '/'
- * @param rddir_p pointer to an initialized 'fs_read_dir_t' variable
+ * @param rddir_p pointer to an initialized 'lv_fs_dir_t' variable
  * @param fn pointer to a buffer to store the filename
  * @return LV_FS_RES_OK or any error from lv_fs_res_t enum
  */
@@ -409,7 +409,7 @@ lv_fs_res_t lv_fs_dir_read(lv_fs_dir_t * rddir_p, char * fn)
 
 /**
  * Close the directory reading
- * @param rddir_p pointer to an initialized 'fs_read_dir_t' variable
+ * @param rddir_p pointer to an initialized 'lv_fs_dir_t' variable
  * @return LV_FS_RES_OK or any error from lv_fs_res_t enum
  */
 lv_fs_res_t lv_fs_dir_close(lv_fs_dir_t * rddir_p)
@@ -422,7 +422,8 @@ lv_fs_res_t lv_fs_dir_close(lv_fs_dir_t * rddir_p)
 
     if(rddir_p->drv->dir_close_cb == NULL) {
         res = LV_FS_RES_NOT_IMP;
-    } else {
+    }
+    else {
         res = rddir_p->drv->dir_close_cb(rddir_p->drv, rddir_p->dir_d);
     }
 
@@ -453,7 +454,8 @@ lv_fs_res_t lv_fs_free_space(char letter, uint32_t * total_p, uint32_t * free_p)
 
     if(drv->free_space_cb == NULL) {
         res = LV_FS_RES_NOT_IMP;
-    } else {
+    }
+    else {
         uint32_t total_tmp = 0;
         uint32_t free_tmp  = 0;
         res                = drv->free_space_cb(drv, &total_tmp, &free_tmp);
@@ -473,7 +475,7 @@ lv_fs_res_t lv_fs_free_space(char letter, uint32_t * total_p, uint32_t * free_p)
  */
 void lv_fs_drv_init(lv_fs_drv_t * drv)
 {
-    memset(drv, 0, sizeof(lv_fs_drv_t));
+    _lv_memset_00(drv, sizeof(lv_fs_drv_t));
 }
 
 /**
@@ -485,11 +487,11 @@ void lv_fs_drv_register(lv_fs_drv_t * drv_p)
 {
     /*Save the new driver*/
     lv_fs_drv_t * new_drv;
-    new_drv = lv_ll_ins_head(&LV_GC_ROOT(_lv_drv_ll));
-    lv_mem_assert(new_drv);
+    new_drv = _lv_ll_ins_head(&LV_GC_ROOT(_lv_drv_ll));
+    LV_ASSERT_MEM(new_drv);
     if(new_drv == NULL) return;
 
-    memcpy(new_drv, drv_p, sizeof(lv_fs_drv_t));
+    _lv_memcpy(new_drv, drv_p, sizeof(lv_fs_drv_t));
 }
 
 /**
@@ -501,8 +503,7 @@ lv_fs_drv_t * lv_fs_get_drv(char letter)
 {
     lv_fs_drv_t * drv;
 
-    LV_LL_READ(LV_GC_ROOT(_lv_drv_ll), drv)
-    {
+    _LV_LL_READ(LV_GC_ROOT(_lv_drv_ll), drv) {
         if(drv->letter == letter) {
             return drv;
         }
@@ -520,8 +521,7 @@ char * lv_fs_get_letters(char * buf)
     lv_fs_drv_t * drv;
     uint8_t i = 0;
 
-    LV_LL_READ(LV_GC_ROOT(_lv_drv_ll), drv)
-    {
+    _LV_LL_READ(LV_GC_ROOT(_lv_drv_ll), drv) {
         buf[i] = drv->letter;
         i++;
     }
@@ -538,11 +538,12 @@ char * lv_fs_get_letters(char * buf)
  */
 const char * lv_fs_get_ext(const char * fn)
 {
-    uint16_t i;
+    size_t i;
     for(i = strlen(fn); i > 0; i--) {
         if(fn[i] == '.') {
             return &fn[i + 1];
-        } else if(fn[i] == '/' || fn[i] == '\\') {
+        }
+        else if(fn[i] == '/' || fn[i] == '\\') {
             return ""; /*No extension if a '\' or '/' found*/
         }
     }
@@ -557,7 +558,7 @@ const char * lv_fs_get_ext(const char * fn)
  */
 char * lv_fs_up(char * path)
 {
-    uint16_t len = strlen(path);
+    size_t len = strlen(path);
     if(len == 0) return path;
 
     len--; /*Go before the trailing '\0'*/
@@ -571,7 +572,7 @@ char * lv_fs_up(char * path)
             return path;
     }
 
-    uint16_t i;
+    size_t i;
     for(i = len; i > 0; i--) {
         if(path[i] == '/' || path[i] == '\\') break;
     }
@@ -588,7 +589,7 @@ char * lv_fs_up(char * path)
  */
 const char * lv_fs_get_last(const char * path)
 {
-    uint16_t len = strlen(path);
+    size_t len = strlen(path);
     if(len == 0) return path;
 
     len--; /*Go before the trailing '\0'*/
@@ -601,7 +602,7 @@ const char * lv_fs_get_last(const char * path)
             return path;
     }
 
-    uint16_t i;
+    size_t i;
     for(i = len; i > 0; i--) {
         if(path[i] == '/' || path[i] == '\\') break;
     }
@@ -630,7 +631,8 @@ static const char * lv_fs_get_real_path(const char * path)
     while(*path != '\0') {
         if(*path == ':' || *path == '\\' || *path == '/') {
             path++;
-        } else {
+        }
+        else {
             break;
         }
     }

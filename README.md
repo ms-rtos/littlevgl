@@ -7,4 +7,4 @@ License: MIT license.
 
 Download: `https://github.com/lvgl/lvgl/releases`
 
-Version: v6.0.2
+Version: v7.9.1
