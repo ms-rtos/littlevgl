@@ -12,7 +12,7 @@ extern void lv_demo_music(void);
 static void lv_log_print(lv_log_level_t level, const char * file, uint32_t line, const char *func, const char *buf)
 {
     static const char * lvl_prefix[] = {"Trace", "Info", "Warn", "Error", "User"};
-    ms_printf("%s: %s \t(%s #%d %s())\n", lvl_prefix[level], buf, file, line, func);
+    ms_printf("%s: %s \t(%s #%d %s())\n", lvl_prefix[level], buf, file, (int)line, func);
 }
 #endif
 
