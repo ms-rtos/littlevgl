@@ -1,6 +1,7 @@
 
 #include <ms_rtos.h>
 #include "lvgl/lvgl.h"
+#include "ms_lvgl_async_event.h"
 #include "gui_guider.h"
 #include "events_init.h"
 #include "custom.h"
@@ -25,6 +26,8 @@ int main(int argc, char *argv[])
     lv_log_register_print_cb(lv_log_print);
 #endif
 
+    ms_lvgl_async_event_init();
+
     lv_init();
 
     lv_port_disp_init();
@@ -37,8 +40,7 @@ int main(int argc, char *argv[])
     custom_init(&guider_ui);
 
     while (MS_TRUE) {
-        lv_task_handler();
-        ms_thread_sleep_ms(1);
+        ms_lvgl_async_event_handler(lv_task_handler());
     }
 
     return (0);

@@ -138,7 +138,8 @@ src/lvgl/src/lv_widgets/lv_win.c \
 src/lvgl/src/lv_widgets/lv_objmask.c \
 src/ms_lvgl_display.c \
 src/ms_lvgl_indev.c \
-src/ms_lvgl_fs.c
+src/ms_lvgl_fs.c \
+src/ms_lvgl_async_event.c
 
 #*********************************************************************************************************
 # Header file search path (eg. LOCAL_INC_PATH := -I"Your hearder files search path")

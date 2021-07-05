@@ -1,6 +1,7 @@
 
 #include <ms_rtos.h>
 #include "lvgl/lvgl.h"
+#include "ms_lvgl_async_event.h"
 
 extern void lv_port_disp_init(void);
 extern void lv_port_indev_init(void);
@@ -22,6 +23,8 @@ int main(int argc, char *argv[])
     lv_log_register_print_cb(lv_log_print);
 #endif
 
+    ms_lvgl_async_event_init();
+
     lv_init();
 
     lv_port_disp_init();
@@ -31,8 +34,7 @@ int main(int argc, char *argv[])
     lv_demo_music();
 
     while (MS_TRUE) {
-        lv_task_handler();
-        ms_thread_sleep_ms(1);
+        ms_lvgl_async_event_handler(lv_task_handler());
     }
 
     return (0);
