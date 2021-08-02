@@ -484,7 +484,7 @@ static lv_fs_res_t fs_dir_read (lv_fs_drv_t * drv, void * rddir_p, char * fn)
     ret = ms_io_readdir_r(dir->dir, &dirent, &result);
     if (ret < 0) {
         res = ms_errno_to_lv_fs_res(ms_thread_get_errno());
-    } else if (ret == 0) {
+    } else if (result == MS_NULL) {
         res = LV_FS_RES_FS_ERR;
     } else {
         strcpy(fn, result->d_name);
